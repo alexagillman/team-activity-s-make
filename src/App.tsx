@@ -166,9 +166,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
   };
 
   const handleDelete = () => {
-    if (confirm('Are you sure you want to delete this activity?')) {
-      deleteActivity.mutate();
-    }
+    deleteActivity.mutate();
   };
 
   return (
