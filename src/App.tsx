@@ -34,7 +34,7 @@ function ActivityForm({ onSuccess, preselectedDay }: { onSuccess: () => void; pr
   const createActivity = useMutation({
     mutationFn: (data: Omit<Activity, '_id'>) => activityCollection.insert(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['activities'] });
+      queryClient.refetchQueries({ queryKey: ['activities'] });
       toast.success('Activity added successfully!');
       setTitle('');
       setDescription('');
@@ -318,6 +318,8 @@ function App() {
   const { data: activities = [], isLoading } = useQuery({
     queryKey: ['activities'],
     queryFn: () => activityCollection.getAll(),
+    staleTime: 0,
+    gcTime: 0,
   });
 
   if (isLoading) {
