@@ -5,7 +5,7 @@ export const activity = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   day: z.enum(['monday', 'tuesday', 'wednesday', 'thursday', 'friday']),
-  time: z.string(), // Format: "HH:MM"
+  time: z.string().optional(), // Format: "HH:MM"
   createdAt: z.number(),
   updatedAt: z.number(),
 });

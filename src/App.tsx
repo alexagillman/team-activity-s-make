@@ -24,10 +24,10 @@ const WEEKDAYS = [
   { key: 'friday', label: 'Friday' },
 ] as const;
 
-function ActivityForm({ onSuccess }: { onSuccess: () => void }) {
+function ActivityForm({ onSuccess, preselectedDay }: { onSuccess: () => void; preselectedDay?: string }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [day, setDay] = useState<string>('');
+  const [day, setDay] = useState<string>(preselectedDay || '');
   const [time, setTime] = useState('');
   const queryClient = useQueryClient();
 
@@ -49,7 +49,7 @@ function ActivityForm({ onSuccess }: { onSuccess: () => void }) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !day || !time) {
+    if (!title.trim() || !day) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -59,7 +59,7 @@ function ActivityForm({ onSuccess }: { onSuccess: () => void }) {
       title: title.trim(),
       description: description.trim(),
       day: day as any,
-      time,
+      time: time.trim() || undefined,
       createdAt: now,
       updatedAt: now,
     });
@@ -91,7 +91,7 @@ function ActivityForm({ onSuccess }: { onSuccess: () => void }) {
 
       <div>
         <Label htmlFor="day">Day *</Label>
-        <Select value={day} onValueChange={setDay} required>
+        <Select value={day} onValueChange={setDay} required disabled={!!preselectedDay}>
           <SelectTrigger id="day">
             <SelectValue placeholder="Select a day" />
           </SelectTrigger>
@@ -106,13 +106,12 @@ function ActivityForm({ onSuccess }: { onSuccess: () => void }) {
       </div>
 
       <div>
-        <Label htmlFor="time">Time *</Label>
+        <Label htmlFor="time">Time (optional)</Label>
         <Input
           id="time"
           type="time"
           value={time}
           onChange={(e) => setTime(e.target.value)}
-          required
         />
       </div>
 
@@ -127,7 +126,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(activity.title);
   const [editDescription, setEditDescription] = useState(activity.description || '');
-  const [editTime, setEditTime] = useState(activity.time);
+  const [editTime, setEditTime] = useState(activity.time || '');
   const queryClient = useQueryClient();
 
   const updateActivity = useMutation({
@@ -162,7 +161,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
     updateActivity.mutate({
       title: editTitle.trim(),
       description: editDescription.trim(),
-      time: editTime,
+      time: editTime.trim() || undefined,
     });
   };
 
@@ -192,6 +191,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
               type="time"
               value={editTime}
               onChange={(e) => setEditTime(e.target.value)}
+              placeholder="Time (optional)"
             />
             <div className="flex gap-2">
               <Button size="sm" onClick={handleUpdate} disabled={updateActivity.isPending}>
@@ -229,9 +229,15 @@ function ActivityCard({ activity }: { activity: Activity }) {
             
             <div className="flex items-center gap-1 mb-2">
               <Clock size={12} className="text-muted-foreground" />
-              <Badge variant="secondary" className="text-xs">
-                {activity.time}
-              </Badge>
+              {activity.time ? (
+                <Badge variant="secondary" className="text-xs">
+                  {activity.time}
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-xs">
+                  No time set
+                </Badge>
+              )}
             </div>
             
             {activity.description && (
@@ -251,7 +257,13 @@ function DayColumn({ day, activities }: { day: typeof WEEKDAYS[number], activiti
 
   const dayActivities = activities
     .filter(activity => activity.day === day.key)
-    .sort((a, b) => a.time.localeCompare(b.time));
+    .sort((a, b) => {
+      // Sort by time if both have times, otherwise put items without time at the end
+      if (!a.time && !b.time) return 0;
+      if (!a.time) return 1;
+      if (!b.time) return -1;
+      return a.time.localeCompare(b.time);
+    });
 
   return (
     <Card className="h-fit">
@@ -266,9 +278,9 @@ function DayColumn({ day, activities }: { day: typeof WEEKDAYS[number], activiti
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Add Activity</DialogTitle>
+                <DialogTitle>Add Activity to {day.label}</DialogTitle>
               </DialogHeader>
-              <ActivityForm onSuccess={() => setIsDialogOpen(false)} />
+              <ActivityForm onSuccess={() => setIsDialogOpen(false)} preselectedDay={day.key} />
             </DialogContent>
           </Dialog>
         </div>
@@ -286,9 +298,9 @@ function DayColumn({ day, activities }: { day: typeof WEEKDAYS[number], activiti
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Add Activity</DialogTitle>
+                  <DialogTitle>Add Activity to {day.label}</DialogTitle>
                 </DialogHeader>
-                <ActivityForm onSuccess={() => setIsDialogOpen(false)} />
+                <ActivityForm onSuccess={() => setIsDialogOpen(false)} preselectedDay={day.key} />
               </DialogContent>
             </Dialog>
           </div>
