@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Clock, Edit, Trash2 } from '@phosphor-icons/react';
+import { Plus, Clock, PencilSimple, Trash } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -213,7 +213,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
                   onClick={() => setIsEditing(true)}
                   className="h-6 w-6 p-0"
                 >
-                  <Edit size={12} />
+                  <PencilSimple size={12} />
                 </Button>
                 <Button
                   size="sm"
@@ -222,7 +222,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
                   className="h-6 w-6 p-0 text-destructive hover:text-destructive"
                   disabled={deleteActivity.isPending}
                 >
-                  <Trash2 size={12} />
+                  <Trash size={12} />
                 </Button>
               </div>
             </div>
